@@ -1,12 +1,7 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import BookViewSet, BorrowRecordViewSet, dashboard_stats
-
-router = DefaultRouter()
-router.register(r'books', BookViewSet)
-router.register(r'borrow-records', BorrowRecordViewSet)
+from django.urls import path
+from .views import BookListView, BookDetailView
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('dashboard/', dashboard_stats),
+    path('', BookListView.as_view(), name='book-list'),
+    path('<int:pk>/', BookDetailView.as_view(), name='book-detail'),
 ]
