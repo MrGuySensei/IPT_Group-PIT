@@ -144,60 +144,394 @@ function DashboardTab({ onToast, onNavigate }) {
 
   return (
     <div>
+      {/* Alert Banner */}
       {stats.overdue_count > 0 && (
-        <div className="overdue-banner">
-          <strong>⚠ {stats.overdue_count} overdue borrow{stats.overdue_count !== 1 ? 's' : ''} — </strong>
-          <span style={{ fontSize: 13, color: 'var(--accent-dark)' }}>
-            {stats.overdue_records.slice(0,2).map(r => `"${r.book_title}" (${r.overdue_days}d)`).join(', ')}
-            {stats.overdue_count > 2 && ` and ${stats.overdue_count - 2} more`}
-          </span>
-          <button className="btn btn-sm btn-danger" style={{ marginLeft: 12 }} onClick={() => onNavigate('borrows')}>View All</button>
+        <div className="dashboard-alert" style={{
+          background: 'linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%)',
+          border: '1px solid #ffcccc',
+          borderRadius: '12px',
+          padding: '16px 20px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          animation: 'slideDown 0.3s ease'
+        }}>
+          <div style={{ fontSize: '24px' }}>⚠️</div>
+          <div style={{ flex: 1 }}>
+            <strong style={{ color: 'var(--danger)', fontSize: '14px' }}>
+              {stats.overdue_count} overdue borrow{stats.overdue_count !== 1 ? 's' : ''}
+            </strong>
+            <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+              {stats.overdue_records.slice(0, 2).map(r => `"${r.book_title}" (${r.overdue_days}d)`).join(', ')}
+              {stats.overdue_count > 2 && ` and ${stats.overdue_count - 2} more`}
+            </div>
+          </div>
+          <button 
+            className="btn btn-sm" 
+            style={{ 
+              background: 'var(--danger)', 
+              color: 'white',
+              borderRadius: '8px',
+              padding: '8px 16px'
+            }} 
+            onClick={() => onNavigate('borrows')}
+          >
+            View All
+          </button>
         </div>
       )}
 
-      {/* Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 28 }}>
+      {/* Stats Grid */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gap: '16px', 
+        marginBottom: '32px' 
+      }}>
         {[
-          { label: 'Total Books', value: stats.total_books, sub: 'unique titles', color: '' },
-          { label: 'Total Copies', value: stats.total_copies, sub: `${stats.available_copies} available`, color: '' },
-          { label: 'Active Borrows', value: stats.active_borrows, sub: `${stats.returned_count} returned`, color: '' },
-          { label: 'Overdue', value: stats.overdue_count, sub: 'need attention', color: stats.overdue_count > 0 ? 'var(--danger)' : '' },
-        ].map(s => (
-          <div key={s.label} className="stat-card">
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value" style={s.color ? { color: s.color } : {}}>{s.value}</div>
-            <div className="stat-sub">{s.sub}</div>
+          { 
+            label: 'Total Books', 
+            value: stats.total_books, 
+            sub: 'unique titles', 
+            color: '#6366f1',
+            icon: '📚',
+            bg: 'linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)'
+          },
+          { 
+            label: 'Total Copies', 
+            value: stats.total_copies, 
+            sub: `${stats.available_copies} available`, 
+            color: '#10b981',
+            icon: '📖',
+            bg: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+          },
+          { 
+            label: 'Active Borrows', 
+            value: stats.active_borrows, 
+            sub: `${stats.returned_count} returned`, 
+            color: '#f59e0b',
+            icon: '📋',
+            bg: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)'
+          },
+          { 
+            label: 'Overdue', 
+            value: stats.overdue_count, 
+            sub: 'need attention', 
+            color: stats.overdue_count > 0 ? '#ef4444' : '#10b981',
+            icon: stats.overdue_count > 0 ? '⚠️' : '✅',
+            bg: stats.overdue_count > 0 
+              ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)' 
+              : 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+          },
+        ].map((s, index) => (
+          <div 
+            key={s.label} 
+            className="dashboard-stat-card"
+            style={{
+              background: s.bg,
+              border: '1px solid rgba(0,0,0,0.05)',
+              borderRadius: '16px',
+              padding: '20px',
+              position: 'relative',
+              overflow: 'hidden',
+              animation: `fadeInUp 0.4s ease ${index * 0.1}s both`,
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'
+            }}
+          >
+            <div style={{ 
+              position: 'absolute', 
+              top: '12px', 
+              right: '12px', 
+              fontSize: '24px',
+              opacity: 0.7
+            }}>
+              {s.icon}
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#666', marginBottom: '8px' }}>
+              {s.label}
+            </div>
+            <div style={{ 
+              fontSize: '36px', 
+              fontFamily: 'var(--font-display)', 
+              fontWeight: '700', 
+              color: s.color,
+              lineHeight: '1',
+              marginBottom: '6px'
+            }}>
+              {s.value}
+            </div>
+            <div style={{ fontSize: '12px', color: '#666' }}>{s.sub}</div>
           </div>
         ))}
       </div>
 
-      {/* Utilization bar */}
-      <div className="card" style={{ padding: '18px 20px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 16 }}>Collection Utilization</div>
-          <div style={{ fontSize: 20, fontFamily: 'var(--font-display)', color: utilPct > 70 ? 'var(--warning)' : 'var(--success)' }}>{utilPct}%</div>
+      {/* Charts Row */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: '1fr 1fr', 
+        gap: '20px', 
+        marginBottom: '24px' 
+      }}>
+        {/* Utilization Card */}
+        <div className="dashboard-card" style={{
+          background: 'white',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '16px' 
+          }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: '600' }}>
+              Collection Utilization
+            </div>
+            <div style={{ 
+              fontSize: '28px', 
+              fontFamily: 'var(--font-display)', 
+              fontWeight: '700',
+              color: utilPct > 70 ? 'var(--warning)' : 'var(--success)' 
+            }}>
+              {utilPct}%
+            </div>
+          </div>
+          <div style={{ 
+            height: '12px', 
+            background: '#f3f4f6', 
+            borderRadius: '6px', 
+            overflow: 'hidden',
+            marginBottom: '12px'
+          }}>
+            <div 
+              style={{ 
+                height: '100%', 
+                width: `${utilPct}%`, 
+                background: utilPct > 70 
+                  ? 'linear-gradient(90deg, #f59e0b, #f97316)' 
+                  : 'linear-gradient(90deg, #10b981, #059669)',
+                borderRadius: '6px', 
+                transition: 'width 0.8s ease',
+                position: 'relative'
+              }}
+            >
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '20px',
+                height: '100%',
+                background: 'rgba(255,255,255,0.3)',
+                filter: 'blur(8px)'
+              }} />
+            </div>
+          </div>
+          <div style={{ fontSize: '13px', color: '#666' }}>
+            {stats.borrowed_copies} of {stats.total_copies} copies currently borrowed
+          </div>
         </div>
-        <div style={{ height: 8, background: 'var(--paper-warm)', borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${utilPct}%`, background: utilPct > 70 ? 'var(--warning)' : 'var(--success)', borderRadius: 4, transition: 'width 0.5s ease' }} />
+
+        {/* Quick Actions */}
+        <div className="dashboard-card" style={{
+          background: 'white',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+            Quick Actions
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button 
+              className="dashboard-action-btn"
+              onClick={() => onNavigate('books')}
+              style={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>➕</div>
+              Add Book
+            </button>
+            <button 
+              className="dashboard-action-btn"
+              onClick={() => onNavigate('borrows')}
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>📋</div>
+              View Borrows
+            </button>
+            <button 
+              className="dashboard-action-btn"
+              onClick={() => onNavigate('members')}
+              style={{
+                background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>👥</div>
+              Members
+            </button>
+            <button 
+              className="dashboard-action-btn"
+              onClick={() => onNavigate('history')}
+              style={{
+                background: 'linear-gradient(135deg, #64748b 0%, #475569 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.2s ease',
+                fontSize: '13px',
+                fontWeight: '500'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>🕰️</div>
+              History
+            </button>
+          </div>
         </div>
-        <div style={{ fontSize: 12, color: 'var(--ink-faint)', marginTop: 6 }}>{stats.borrowed_copies} of {stats.total_copies} copies currently borrowed</div>
       </div>
 
-      {/* Popular books */}
+      {/* Popular Books */}
       {stats.popular_books.length > 0 && (
-        <div className="card" style={{ padding: '18px 20px' }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, marginBottom: 14 }}>Most Borrowed</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="dashboard-card" style={{
+          background: 'white',
+          border: '1px solid var(--border)',
+          borderRadius: '16px',
+          padding: '24px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+        }}>
+          <div style={{ 
+            fontFamily: 'var(--font-display)', 
+            fontSize: '18px', 
+            fontWeight: '600', 
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>🔥</span>
+            Most Borrowed Books
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {stats.popular_books.map((b, i) => (
-              <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: i === 0 ? 'var(--accent-light)' : 'var(--paper-warm)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 500, color: i === 0 ? 'var(--accent)' : 'var(--ink-muted)', flexShrink: 0 }}>{i + 1}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, fontSize: 14 }}>{b.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--ink-muted)' }}>{b.author}</div>
+              <div 
+                key={b.id} 
+                className="popular-book-item"
+                style={{
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '16px',
+                  padding: '12px 16px',
+                  background: i === 0 ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : '#f9fafb',
+                  borderRadius: '12px',
+                  border: i === 0 ? '1px solid #fbbf24' : '1px solid #e5e7eb',
+                  transition: 'transform 0.2s ease'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateX(4px)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0)'}
+              >
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  background: i === 0 ? 'linear-gradient(135deg, #f59e0b, #f97316)' : '#6b7280',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: 'white',
+                  flexShrink: 0 
+                }}>
+                  {i + 1}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--ink-muted)', fontWeight: 500 }}>{b.borrow_count}×</div>
-                <div style={{ width: 80, height: 6, background: 'var(--paper-warm)', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.min(100, (b.borrow_count / (stats.popular_books[0]?.borrow_count || 1)) * 100)}%`, background: 'var(--accent)', borderRadius: 3 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ 
+                    fontWeight: '600', 
+                    fontSize: '14px',
+                    color: i === 0 ? '#92400e' : '#111827'
+                  }}>
+                    {b.title}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>{b.author}</div>
+                </div>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#6b7280', 
+                  fontWeight: '500',
+                  marginRight: '12px'
+                }}>
+                  {b.borrow_count}×
+                </div>
+                <div style={{ 
+                  width: '60px', 
+                  height: '6px', 
+                  background: '#e5e7eb', 
+                  borderRadius: '3px', 
+                  overflow: 'hidden' 
+                }}>
+                  <div 
+                    style={{ 
+                      height: '100%', 
+                      width: `${Math.min(100, (b.borrow_count / (stats.popular_books[0]?.borrow_count || 1)) * 100)}%`, 
+                      background: i === 0 
+                        ? 'linear-gradient(90deg, #f59e0b, #f97316)' 
+                        : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                      borderRadius: '3px',
+                      transition: 'width 0.8s ease'
+                    }} 
+                  />
                 </div>
               </div>
             ))}

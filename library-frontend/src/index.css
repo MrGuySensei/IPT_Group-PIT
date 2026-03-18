@@ -92,3 +92,43 @@ tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; 
 tbody tr:hover { background: var(--paper); }
 th { padding: 10px 12px; text-align: left; color: var(--ink-muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
 td { padding: 11px 12px; }
+
+/* Dashboard Animations */
+@keyframes slideDown {
+  from { 
+    transform: translateY(-20px); 
+    opacity: 0; 
+  } 
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  } 
+}
+
+@keyframes fadeInUp {
+  from { 
+    transform: translateY(20px); 
+    opacity: 0; 
+  } 
+  to { 
+    transform: translateY(0); 
+    opacity: 1; 
+  } 
+}
+
+/* Dashboard-specific styles */
+.dashboard-stat-card {
+  cursor: pointer;
+}
+
+.dashboard-action-btn {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-action-btn:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.popular-book-item {
+  cursor: pointer;
+}
