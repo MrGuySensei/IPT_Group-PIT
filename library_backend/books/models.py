@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+from datetime import date, timedelta
 
 
 class Book(models.Model):
@@ -29,7 +29,7 @@ class BorrowRecord(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name='borrow_records')
     borrower_name = models.CharField(max_length=255)
     borrower_email = models.EmailField()
-    borrow_date = models.DateField(default=timezone.now)
+    borrow_date = models.DateField(default=date.today)
     due_date = models.DateField(null=True, blank=True)
     return_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='borrowed')
