@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - Library System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c5530;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .content {
+            margin: 30px 0;
+        }
+        .welcome-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #495057;
+        }
+        .verification-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #2c5530;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #2c5530, #3d7c47);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(44, 85, 48, 0.2);
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            background: linear-gradient(135deg, #244026, #2c5530);
+            box-shadow: 0 4px 8px rgba(44, 85, 48, 0.3);
+            transform: translateY(-1px);
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            font-size: 12px;
+            color: #6c757d;
+            text-align: center;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .link-text {
+            word-break: break-all;
+            color: #2c5530;
+            font-family: monospace;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📚 Library System</div>
+            <div class="subtitle">Account Verification</div>
+        </div>
+
+        <div class="content">
+            <div class="welcome-text">
+                Welcome to Library System, {{ user.username }}!
+            </div>
+
+            <p>Thank you for creating an account with us. To complete your registration and start borrowing books, please verify your email address.</p>
+
+            <div class="verification-section">
+                <h3 style="margin-top: 0; color: #2c5530;">Verify Your Email</h3>
+                <p>Click the button below to verify your email address and activate your account:</p>
+
+                <div style="text-align: center;">
+                    <a href="{{ verification_url }}" class="button">
+                        ✅ Verify My Email
+                    </a>
+                </div>
+
+                <p style="margin-top: 20px; margin-bottom: 0;"><strong>Or copy and paste this link into your browser:</strong></p>
+                <div class="link-text">{{ verification_url }}</div>
+            </div>
+
+            <div class="warning">
+                <strong>⚠️ Important:</strong> This verification link will expire in 24 hours. If you didn't create this account, please ignore this email.
+            </div>
+
+            <p>If you have any questions or need assistance, feel free to contact our support team.</p>
+
+            <p>Happy reading!<br>
+            <strong>The Library System Team</strong></p>
+        </div>
+
+        <div class="footer">
+            <p>This email was sent to {{ user.email }} because someone requested account creation at Library System.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+            <p>&copy; 2024 Library System. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

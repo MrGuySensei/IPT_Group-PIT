@@ -1,0 +1,18 @@
+# Core Django
+django>=5.0
+
+# REST Framework
+djangorestframework
+djangorestframework-simplejwt
+
+# CORS
+django-cors-headers
+
+# Other dependencies
+pillow
+python-dotenv
+groq
+
+# Optional but useful
+whitenoise
+gunicorn
