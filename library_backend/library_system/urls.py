@@ -12,16 +12,16 @@ urlpatterns = [
     path('', include(router.urls)),
     path('dashboard/', dashboard_stats),
 
-    # Use the existing user app JWT auth and profile endpoints
-    path('auth/', include('user.urls')),
-
-    # Preserve the system's dedicated staff/member auth flows
-    path('auth/staff/signup/', auth_views.staff_signup_view, name='staff-signup'),
-    path('auth/staff/login/', auth_views.staff_login_view, name='staff-login'),
-    path('auth/member/signup/', auth_views.member_signup_view, name='member-signup'),
-    path('auth/member/login/', auth_views.member_login_view, name='member-login'),
-    path('auth/logout/', auth_views.logout_view, name='logout'),
-    path('auth/me/', auth_views.me_view, name='me'),
+    # Auth
+    path('auth/me/',                  auth_views.me_view,                  name='me'),
+    path('auth/logout/',              auth_views.logout_view,              name='logout'),
+    path('auth/staff/signup/',        auth_views.staff_signup_view,        name='staff-signup'),
+    path('auth/staff/login/',         auth_views.staff_login_view,         name='staff-login'),
+    path('auth/member/signup/',       auth_views.member_signup_view,       name='member-signup'),
+    path('auth/member/login/',        auth_views.member_login_view,        name='member-login'),
     path('auth/resend-verification/', auth_views.resend_verification_view, name='resend-verification'),
-    path('auth/verify/<uuid:token>/', auth_views.verify_email_view, name='verify_email'),
+    path('auth/verify/<uuid:token>/', auth_views.verify_email_view,        name='verify-email'),
+
+    # Profile
+    path('auth/profile/',             include('user.urls')),
 ]

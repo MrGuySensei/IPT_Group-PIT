@@ -9,6 +9,8 @@ from rest_framework import status, generics, permissions
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth import authenticate, login, logout
+from rest_framework.decorators import api_view, permission_classes as pc
 
 from .models import UserProfile
 from .serializers import (
@@ -177,7 +179,158 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
                 {"message": "Profile updated successfully.", "data": UserSerializer(user).data}
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class StaffLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [JSONParser]
 
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response(
+                {'error': 'Username and password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Try authenticating by username first, then email
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            # Fallback: look up by email
+            try:
+                u = User.objects.get(email=username)
+                user = authenticate(request, username=u.email, password=password)
+            except User.DoesNotExist:
+                pass
+
+        if user is None:
+            return Response(
+                {'error': 'Invalid credentials.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Check email verification
+        if not user.is_email_verified:
+            return Response(
+                {
+                    'error': 'Please verify your email before logging in.',
+                    'needs_verification': True,
+                    'email': user.email,
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Check role
+        if not user.is_staff:
+            return Response(
+                {'error': 'Access denied. Staff only.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        login(request, user)
+        return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': 'staff',
+                'profile_picture_url': (
+                    request.build_absolute_uri(user.profile.profile_picture.url)
+                    if hasattr(user, 'profile') and user.profile.profile_picture
+                    else None
+                ),
+            }
+        })
+
+
+class MemberLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [JSONParser]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        if not username or not password:
+            return Response(
+                {'error': 'Username and password are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            try:
+                u = User.objects.get(email=username)
+                user = authenticate(request, username=u.email, password=password)
+            except User.DoesNotExist:
+                pass
+
+        if user is None:
+            return Response(
+                {'error': 'Invalid credentials.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_email_verified:
+            return Response(
+                {
+                    'error': 'Please verify your email before logging in.',
+                    'needs_verification': True,
+                    'email': user.email,
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if user.is_staff:
+            return Response(
+                {'error': 'Please use the Staff portal to log in.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        login(request, user)
+        return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': 'member',
+                'profile_picture_url': (
+                    request.build_absolute_uri(user.profile.profile_picture.url)
+                    if hasattr(user, 'profile') and user.profile.profile_picture
+                    else None
+                ),
+            }
+        })
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        logout(request)
+        return Response({'message': 'Logged out successfully.'})
+
+
+class MeView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response({'user': None})
+        user = request.user
+        return Response({
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': 'staff' if user.is_staff else 'member',
+                'profile_picture_url': (
+                    request.build_absolute_uri(user.profile.profile_picture.url)
+                    if hasattr(user, 'profile') and user.profile.profile_picture
+                    else None
+                ),
+            }
+        })
 
 class UploadProfilePictureView(APIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -11,7 +11,6 @@ from .email_utils import send_verification_email, parse_date_of_birth, uses_cons
 
 
 def user_to_dict(user):
-    """Return user dict including role and profile picture URL."""
     profile_picture_url = None
     try:
         if user.profile and user.profile.profile_picture:
@@ -29,7 +28,6 @@ def user_to_dict(user):
 
 
 def get_request_payload(request):
-    """Parse JSON or multipart/form-data payload for signup requests."""
     content_type = request.META.get('CONTENT_TYPE', '')
     if 'multipart/form-data' in content_type:
         return request.POST
@@ -37,7 +35,6 @@ def get_request_payload(request):
 
 
 def authenticate_user(request, identifier, password):
-    """Authenticate using either email or username."""
     if not identifier or not password:
         return None
 
@@ -52,9 +49,8 @@ def authenticate_user(request, identifier, password):
 
 
 def apply_signup_profile(user, profile, data, request):
-    """Save optional signup fields on user + profile."""
     first_name = data.get('first_name', '').strip()
-    last_name = data.get('last_name', '').strip()
+    last_name  = data.get('last_name', '').strip()
     if first_name:
         user.first_name = first_name
     if last_name:
@@ -74,21 +70,19 @@ def apply_signup_profile(user, profile, data, request):
 
 
 def try_send_verification(user, request):
-    """Send verification email; never raises."""
     if not settings.REQUIRE_EMAIL_VERIFICATION:
         return True, None, None, 'none'
     return send_verification_email(user, request)
 
 
 def login_blocked_unverified(user, request):
-    """Resend verification email when an unverified user tries to log in."""
     sent, err, _verify_url, delivery_mode = try_send_verification(user, request)
     if delivery_mode == 'console':
         note = ' Check the Django server terminal for the link (development mode only).'
     elif sent and delivery_mode == 'smtp':
-        note = f" A verification email was sent to {user.email}. Please check your inbox and spam folder."
+        note = f' A verification email was sent to {user.email}. Please check your inbox and spam folder.'
     else:
-        note = f" Could not send email ({err or 'check SMTP settings'}). Use Resend verification on the login page."
+        note = f' Could not send email ({err or "check SMTP settings"}). Use Resend verification on the login page.'
 
     return JsonResponse({
         'error': 'Please verify your email before logging in.' + note,
@@ -100,7 +94,6 @@ def login_blocked_unverified(user, request):
 
 
 def create_account(username, email, password, is_staff, data, request):
-    """Create user + profile and send verification email automatically."""
     user = User.objects.create_user(
         email=email,
         username=username,
@@ -129,17 +122,17 @@ def create_account(username, email, password, is_staff, data, request):
     if delivery_mode == 'console':
         message = (
             f'Account created for {email}. Development mode: check the Django terminal for the verify link. '
-            'Configure Gmail SMTP in .env to send emails to the inbox.'
+            'Configure Gmail SMTP in .env to send real emails.'
         )
     elif sent and delivery_mode == 'smtp':
         message = (
             f'Account created successfully. A verification email was sent to {email}. '
-            'Please check your inbox and spam folder, then click the link in that email to activate your account.'
+            'Please check your inbox and spam folder, then click the link to activate your account.'
         )
     else:
         message = (
             f'Account created for {email}, but the verification email could not be delivered. '
-            f'{err or "Check SMTP settings in library_backend/.env."} '
+            f'{err or "Check SMTP settings in .env."} '
             'You can use "Resend verification email" on the login page.'
         )
 
@@ -158,20 +151,18 @@ def create_account(username, email, password, is_staff, data, request):
 @require_http_methods(["POST"])
 def staff_signup_view(request):
     try:
-        data = get_request_payload(request)
+        data     = get_request_payload(request)
         username = data.get('username', '').strip()
-        email = data.get('email', '').strip().lower()
+        email    = data.get('email', '').strip().lower()
         password = data.get('password', '')
-        confirm_password = data.get('confirm_password', '')
-        date_of_birth = data.get('date_of_birth', '').strip()
+        confirm  = data.get('confirm_password', '')
+        dob      = data.get('date_of_birth', '').strip()
 
-        if not username or not email or not password or not date_of_birth:
-            return JsonResponse({
-                'error': 'Username, email, password, and date of birth are required.',
-            }, status=400)
-        if not parse_date_of_birth(date_of_birth):
+        if not username or not email or not password or not dob:
+            return JsonResponse({'error': 'Username, email, password, and date of birth are required.'}, status=400)
+        if not parse_date_of_birth(dob):
             return JsonResponse({'error': 'Please enter a valid date of birth.'}, status=400)
-        if password != confirm_password:
+        if password != confirm:
             return JsonResponse({'error': 'Passwords do not match.'}, status=400)
         if len(password) < 6:
             return JsonResponse({'error': 'Password must be at least 6 characters.'}, status=400)
@@ -194,7 +185,7 @@ def staff_signup_view(request):
 @require_http_methods(["POST"])
 def staff_login_view(request):
     try:
-        data = json.loads(request.body)
+        data     = json.loads(request.body)
         username = data.get('username', '').strip()
         password = data.get('password', '')
 
@@ -224,7 +215,7 @@ def staff_login_view(request):
 @require_http_methods(["POST"])
 def member_login_view(request):
     try:
-        data = json.loads(request.body)
+        data     = json.loads(request.body)
         username = data.get('username', '').strip()
         password = data.get('password', '')
 
@@ -254,20 +245,18 @@ def member_login_view(request):
 @require_http_methods(["POST"])
 def member_signup_view(request):
     try:
-        data = get_request_payload(request)
+        data     = get_request_payload(request)
         username = data.get('username', '').strip()
-        email = data.get('email', '').strip().lower()
+        email    = data.get('email', '').strip().lower()
         password = data.get('password', '')
-        confirm_password = data.get('confirm_password', '')
-        date_of_birth = data.get('date_of_birth', '').strip()
+        confirm  = data.get('confirm_password', '')
+        dob      = data.get('date_of_birth', '').strip()
 
-        if not username or not email or not password or not date_of_birth:
-            return JsonResponse({
-                'error': 'Username, email, password, and date of birth are required.',
-            }, status=400)
-        if not parse_date_of_birth(date_of_birth):
+        if not username or not email or not password or not dob:
+            return JsonResponse({'error': 'Username, email, password, and date of birth are required.'}, status=400)
+        if not parse_date_of_birth(dob):
             return JsonResponse({'error': 'Please enter a valid date of birth.'}, status=400)
-        if password != confirm_password:
+        if password != confirm:
             return JsonResponse({'error': 'Passwords do not match.'}, status=400)
         if len(password) < 6:
             return JsonResponse({'error': 'Password must be at least 6 characters.'}, status=400)
@@ -284,13 +273,13 @@ def member_signup_view(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ── Resend verification (signup helper + login portal) ────────────────────────
+# ── Resend Verification ───────────────────────────────────────────────────────
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def resend_verification_view(request):
     try:
-        data = json.loads(request.body)
+        data  = json.loads(request.body)
         email = data.get('email', '').strip().lower()
         if not email:
             return JsonResponse({'error': 'Email is required.'}, status=400)
@@ -298,14 +287,13 @@ def resend_verification_view(request):
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return JsonResponse({
-                'message': 'If that email is registered, a verification link has been sent.',
-            })
+            return JsonResponse({'message': 'If that email is registered, a verification link has been sent.'})
 
         if user.is_email_verified:
             return JsonResponse({'message': 'This email is already verified. You can log in now.'})
 
         sent, err, _verify_url, delivery_mode = try_send_verification(user, request)
+
         if delivery_mode == 'console':
             return JsonResponse({
                 'message': 'Development mode: check the Django terminal for the verification link.',
@@ -331,7 +319,7 @@ def resend_verification_view(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ── Shared Logout & Me ────────────────────────────────────────────────────────
+# ── Logout ────────────────────────────────────────────────────────────────────
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -340,12 +328,14 @@ def logout_view(request):
     return JsonResponse({'message': 'Logged out successfully.'})
 
 
+# ── Me ────────────────────────────────────────────────────────────────────────
+
 @ensure_csrf_cookie
 @require_http_methods(["GET"])
 def me_view(request):
     if request.user.is_authenticated:
         return JsonResponse({'user': user_to_dict(request.user)})
-    return JsonResponse({'user': None}, status=401)
+    return JsonResponse({'user': None})   # ← 200, not 401
 
 
 # ── Users List (staff only) ───────────────────────────────────────────────────
@@ -358,19 +348,18 @@ def users_list_view(request):
         return JsonResponse({'error': 'Staff access only.'}, status=403)
 
     users = User.objects.all().values('id', 'username', 'email', 'is_staff')
-    user_list = [
+    return JsonResponse({'users': [
         {
-            'id': u['id'],
+            'id':       u['id'],
             'username': u['username'],
-            'email': u['email'],
-            'role': 'staff' if u['is_staff'] else 'member',
+            'email':    u['email'],
+            'role':     'staff' if u['is_staff'] else 'member',
         }
         for u in users
-    ]
-    return JsonResponse({'users': user_list})
+    ]})
 
 
-# ── Email Verification (link from email opens React app → calls this API) ─────
+# ── Email Verification ────────────────────────────────────────────────────────
 
 @require_http_methods(["GET"])
 def verify_email_view(request, token):
@@ -383,7 +372,7 @@ def verify_email_view(request, token):
         user.is_active = True
         user.save(update_fields=['is_email_verified', 'is_active'])
         return JsonResponse({
-            'message': 'Email verified successfully! You can now log in to your account.',
+            'message': 'Email verified successfully! You can now log in.',
             'verified': True,
         })
 

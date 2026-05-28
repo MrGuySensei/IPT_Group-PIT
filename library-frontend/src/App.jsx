@@ -24,13 +24,12 @@ function AuthProvider({ children }) {
   }, [])
 
 const loginStaff = async (username, password) => {
-  const res = await fetch('/api/auth/staff/login', {   // ← no trailing slash
+  const res = await fetch('/api/auth/staff/login/', {   // ← trailing slash restored
     method: 'POST', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   })
 
-  // Safely parse — a 405/500 may return an empty body
   let data = {}
   try {
     data = await res.json()
@@ -70,13 +69,12 @@ const loginStaff = async (username, password) => {
   }
 
 const loginMember = async (username, password) => {
-  const res = await fetch('/api/auth/member/login', {   // ← removed trailing slash
+  const res = await fetch('/api/auth/member/login/', {  // ← trailing slash restored
     method: 'POST', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
   })
 
-  // Safely parse — a 405/500 may return an empty body
   let data = {}
   try {
     data = await res.json()
