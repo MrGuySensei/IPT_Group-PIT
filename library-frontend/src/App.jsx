@@ -23,21 +23,29 @@ function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
-  const loginStaff = async (username, password) => {
-    const res  = await fetch('/api/auth/staff/login/', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      const err = new Error(data.error || 'Login failed')
-      err.needsVerification = data.needs_verification
-      err.email = data.email
-      throw err
-    }
-    setUser(data.user)
+const loginStaff = async (username, password) => {
+  const res = await fetch('/api/auth/staff/login', {   // ← no trailing slash
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+
+  // Safely parse — a 405/500 may return an empty body
+  let data = {}
+  try {
+    data = await res.json()
+  } catch {
+    throw new Error(`Server error (${res.status})`)
   }
+
+  if (!res.ok) {
+    const err = new Error(data.error || 'Login failed')
+    err.needsVerification = data.needs_verification
+    err.email = data.email
+    throw err
+  }
+  setUser(data.user)
+}
 
   const signupStaff = async (fields) => {
     const formData = new FormData()
@@ -61,21 +69,29 @@ function AuthProvider({ children }) {
     return data
   }
 
-  const loginMember = async (username, password) => {
-    const res  = await fetch('/api/auth/member/login/', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      const err = new Error(data.error || 'Login failed')
-      err.needsVerification = data.needs_verification
-      err.email = data.email
-      throw err
-    }
-    setUser(data.user)
+const loginMember = async (username, password) => {
+  const res = await fetch('/api/auth/member/login', {   // ← removed trailing slash
+    method: 'POST', credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+
+  // Safely parse — a 405/500 may return an empty body
+  let data = {}
+  try {
+    data = await res.json()
+  } catch {
+    throw new Error(`Server error (${res.status})`)
   }
+
+  if (!res.ok) {
+    const err = new Error(data.error || 'Login failed')
+    err.needsVerification = data.needs_verification
+    err.email = data.email
+    throw err
+  }
+  setUser(data.user)
+}
 
   const resendVerification = async (email) => {
     const res = await fetch('/api/auth/resend-verification/', {
