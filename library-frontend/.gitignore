@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+.expo/
+
+# Build
+dist/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Library System — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1714;--ink2:#4a4540;--muted:#7a7570;--faint:#c0b8b0;
+  --paper:#f7f3ee;--warm:#ede8e0;--card:#ffffff;
+  --accent:#c4522a;--accent-d:#8f3518;--accent-l:#f5ede8;
+  --success:#2d7a4f;--success-l:#e6f4ec;
+  --warning:#b56a0e;--warning-l:#fdf3e3;
+  --danger:#c4522a;--danger-l:#f5ede8;
+  --info:#1a5e9a;--info-l:#e8f2fb;
+  --border:#e4dfd7;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --radius:10px;
+  --shadow:0 1px 3px rgba(26,23,20,.08),0 4px 16px rgba(26,23,20,.06);
+  --shadow-sm:0 1px 3px rgba(26,23,20,.1);
+}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.6;min-height:100vh;display:flex}
+h1,h2,h3{font-family:var(--serif)}
+button{font-family:var(--sans);cursor:pointer;border:none;outline:none;transition:all .15s}
+input,select,textarea{font-family:var(--sans);font-size:13px;border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;background:white;color:var(--ink);outline:none;transition:border-color .15s;width:100%}
+input:focus,select:focus{border-color:var(--accent)}
+label{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+.sidebar{width:220px;background:var(--ink);min-height:100vh;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .name{font-family:var(--serif);font-size:20px;color:white}
+.sidebar-logo .sub{font-size:10px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;font-weight:500;margin-top:2px}
+.sidebar-nav{padding:16px 10px;flex:1;display:flex;flex-direction:column;gap:2px}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13px;font-weight:400;color:rgba(255,255,255,.55);background:none;border:none;cursor:pointer;text-align:left;width:100%;transition:all .15s}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.nav-btn.active{background:var(--accent);color:white;font-weight:500}
+.nav-btn .icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.3);font-family:var(--mono)}
+
+.main{flex:1;min-width:0;padding:32px 36px;max-width:100%}
+.page{display:none}.page.active{display:block}
+.page-header{margin-bottom:28px}
+.page-header h2{font-size:26px;color:var(--ink)}
+.page-header p{font-size:13px;color:var(--muted);margin-top:4px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:white;border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+.stat-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+.stat-value{font-family:var(--serif);font-size:34px;line-height:1;color:var(--ink)}
+.stat-sub{font-size:11px;color:var(--faint);margin-top:4px}
+
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.toolbar input{max-width:260px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:white}.btn-primary:hover{background:var(--accent-d)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}.btn-ghost:hover{background:var(--warm);color:var(--ink)}
+.btn-success{background:var(--success-l);color:var(--success)}.btn-success:hover{background:var(--success);color:white}
+.btn-danger{background:var(--danger-l);color:var(--danger)}.btn-danger:hover{background:var(--danger);color:white}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.card{background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.table-wrap{overflow:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{border-bottom:2px solid var(--border);background:var(--paper)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--paper)}
+th{padding:10px 14px;text-align:left;color:var(--muted);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+td{padding:11px 14px;vertical-align:middle}
+.td-actions{display:flex;gap:6px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;letter-spacing:.02em;white-space:nowrap}
+.badge-available{background:var(--success-l);color:var(--success)}
+.badge-borrowed{background:var(--warning-l);color:var(--warning)}
+.badge-returned{background:var(--success-l);color:var(--success)}
+.badge-overdue{background:var(--danger-l);color:var(--danger)}
+.badge-info{background:var(--info-l);color:var(--info)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(2px)}
+.modal{background:white;border-radius:14px;padding:28px;width:100%;max-width:460px;box-shadow:0 20px 60px rgba(26,23,20,.2);animation:modalIn .2s ease}
+.modal h2{font-size:20px;margin-bottom:20px}
+@keyframes modalIn{from{transform:translateY(8px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.form-grid{display:flex;flex-direction:column;gap:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+.toast-wrap{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:300}
+.toast{background:var(--ink);color:white;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(26,23,20,.25);animation:slideUp .2s ease;display:flex;align-items:center;gap:10px}
+.toast.success{background:var(--success)}.toast.error{background:var(--danger)}
+@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty .ico{font-size:36px;margin-bottom:10px}
+.overdue-banner{background:var(--danger-l);border:1px solid #f0c4b4;border-radius:var(--radius);padding:12px 16px;margin-bottom:20px;font-size:13px}
+.overdue-banner strong{color:var(--danger)}
+.util-bar{height:8px;background:var(--warm);border-radius:4px;overflow:hidden;margin-top:8px}
+.util-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.popular-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.popular-row:last-child{border-bottom:none}
+.member-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="name">Library</div>
+    <div class="sub">Admin Panel</div>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="nav-btn active" onclick="nav('dashboard',this)"><span class="icon">◎</span> Dashboard</button>
+    <button class="nav-btn" onclick="nav('books',this)"><span class="icon">📚</span> Books</button>
+    <button class="nav-btn" onclick="nav('borrows',this)"><span class="icon">📋</span> Active Borrows</button>
+    <button class="nav-btn" onclick="nav('members',this)"><span class="icon">👥</span> Members</button>
+    <button class="nav-btn" onclick="nav('history',this)"><span class="icon">🕰</span> History</button>
+  </nav>
+  <div class="sidebar-footer">127.0.0.1:8000</div>
+</aside>
+
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header"><h2>Dashboard</h2><p>Live overview of the library system</p></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Books</div><div class="stat-value" id="d-books">—</div><div class="stat-sub">unique titles</div></div>
+      <div class="stat-card"><div class="stat-label">Total Copies</div><div class="stat-value" id="d-copies">—</div><div class="stat-sub" id="d-avail-sub">— available</div></div>
+      <div class="stat-card"><div class="stat-label">Active Borrows</div><div class="stat-value" id="d-borrows">—</div><div class="stat-sub" id="d-returned-sub">— returned</div></div>
+      <div class="stat-card"><div class="stat-label">Overdue</div><div class="stat-value" id="d-overdue" style="color:var(--danger)">—</div><div class="stat-sub">need attention</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="card" style="padding:20px">
+        <div style="font-family:var(--serif);font-size:16px;margin-bottom:4px">Collection Utilization</div>
+        <div style="font-size:12px;color:var(--muted)" id="d-util-sub">Loading…</div>
+        <div class="util-bar" style="margin-top:12px"><div class="util-fill" id="d-util-fill" style="width:0%;background:var(--success)"></div></div>
+        <div style="font-size:28px;font-family:var(--serif);margin-top:8px" id="d-util-pct">—</div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="font-family:var(--serif);font-size:16px;margin-bottom:14px">Most Borrowed</div>
+        <div id="d-popular"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div id="d-overdue-section" style="margin-top:20px;display:none">
+      <div class="overdue-banner"><strong id="d-overdue-title">⚠ Overdue borrows</strong></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Book</th><th>Borrower</th><th>Email</th><th>Due Date</th><th>Days Overdue</th></tr></thead>
+        <tbody id="d-overdue-body"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- BOOKS -->
+  <div id="page-books" class="page">
+    <div class="page-header"><h2>Books</h2><p>Manage your library collection</p></div>
+    <div class="toolbar">
+      <input id="books-search" placeholder="Search title, author, ISBN…" oninput="filterBooks()"/>
+      <button class="btn btn-primary" onclick="openBookModal()">＋ Add Book</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Title</th><th>Author</th><th>ISBN</th><th>Copies</th><th>Available</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="books-body"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
+    </table></div>
+  </div>
+
+  <!-- BORROWS -->
+  <div id="page-borrows" class="page">
+    <div class="page-header"><h2>Active Borrows</h2><p>Currently borrowed and overdue books</p></div>
+    <div class="toolbar">
+      <input id="borrows-search" placeholder="Search borrower name or book…" oninput="filterBorrows()"/>
+      <button class="btn btn-primary" onclick="openBorrowModal()">＋ New Borrow</button>
+      <button class="btn btn-ghost" onclick="loadBorrows()">↻ Refresh</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Book</th><th>Borrower</th><th>Email</th><th>Borrowed</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="borrows-body"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
+    </table></div>
+  </div>
+
+  <!-- MEMBERS -->
+  <div id="page-members" class="page">
+    <div class="page-header"><h2>Members</h2><p>All unique borrowers and their activity</p></div>
+    <div class="toolbar"><input id="members-search" placeholder="Search name or email…" oninput="filterMembers()"/></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Member</th><th>Email</th><th>Total Borrows</th><th>Active</th><th>Overdue</th></tr></thead>
+      <tbody id="members-body"><tr><td colspan="5"><div class="spinner"></div></td></tr></tbody>
+    </table></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="page-history" class="page">
+    <div class="page-header"><h2>History</h2><p>Complete borrowing history</p></div>
+    <div class="toolbar">
+      <input id="history-search" placeholder="Search book or borrower…" oninput="filterHistory()"/>
+      <select id="history-status" onchange="filterHistory()" style="width:140px">
+        <option value="">All statuses</option>
+        <option value="borrowed">Borrowed</option>
+        <option value="returned">Returned</option>
+        <option value="overdue">Overdue</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Book</th><th>Author</th><th>Borrower</th><th>Borrowed</th><th>Due</th><th>Returned</th><th>Overdue Days</th><th>Status</th></tr></thead>
+      <tbody id="history-body"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
+    </table></div>
+  </div>
+
+</main>
+
+<!-- BOOK MODAL -->
+<div id="book-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBookModal()">
+  <div class="modal">
+    <h2 id="book-modal-title">Add New Book</h2>
+    <div class="form-grid">
+      <div><label>Title</label><input id="bm-title" placeholder="Book title"/></div>
+      <div><label>Author</label><input id="bm-author" placeholder="Author name"/></div>
+      <div class="form-row">
+        <div><label>ISBN</label><input id="bm-isbn" placeholder="978…"/></div>
+        <div><label>Total Copies</label><input id="bm-copies" type="number" min="1" value="1"/></div>
+      </div>
+      <div id="bm-error" style="display:none;padding:10px 12px;background:var(--danger-l);border-radius:8px;color:var(--danger);font-size:12px"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeBookModal()">Cancel</button>
+      <button class="btn btn-primary" id="bm-submit" onclick="submitBook()">Add Book</button>
+    </div>
+  </div>
+</div>
+
+<!-- BORROW MODAL -->
+<div id="borrow-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBorrowModal()">
+  <div class="modal">
+    <h2>New Borrow Record</h2>
+    <div class="form-grid">
+      <div><label>Book</label><select id="brm-book"><option value="">Select a book…</option></select></div>
+      <div><label>Borrower Name</label><input id="brm-name" placeholder="Full name"/></div>
+      <div><label>Email</label><input id="brm-email" type="email" placeholder="borrower@email.com"/></div>
+      <div><label>Due Date</label><input id="brm-due" type="date"/></div>
+      <div id="brm-error" style="display:none;padding:10px 12px;background:var(--danger-l);border-radius:8px;color:var(--danger);font-size:12px"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeBorrowModal()">Cancel</button>
+      <button class="btn btn-primary" id="brm-submit" onclick="submitBorrow()">Confirm Borrow</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+const API='http://127.0.0.1:8000/api'
+const $=id=>document.getElementById(id)
+const fmt=d=>d?new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—'
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+
+async function api(path,opts={}){
+  const res=await fetch(API+path,{headers:{'Content-Type':'application/json',...(opts.headers||{})},...opts})
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(Object.values(e)[0]?.[0]||Object.values(e)[0]||'Request failed')}
+  if(res.status===204)return null
+  return res.json()
+}
+
+function toast(msg,type='success'){
+  const el=document.createElement('div')
+  el.className=`toast ${type}`
+  el.innerHTML=`<span>${type==='success'?'✓':'✕'}</span> ${esc(msg)}`
+  $('toasts').appendChild(el)
+  setTimeout(()=>el.remove(),3400)
+}
+
+function nav(page,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'))
+  $(`page-${page}`).classList.add('active')
+  btn.classList.add('active')
+  const loaders={dashboard:loadDashboard,books:loadBooks,borrows:loadBorrows,members:loadMembers,history:loadHistory}
+  loaders[page]?.()
+}
+
+// ── DASHBOARD ──
+async function loadDashboard(){
+  try{
+    const d=await api('/dashboard/')
+    $('d-books').textContent=d.total_books
+    $('d-copies').textContent=d.total_copies
+    $('d-borrows').textContent=d.active_borrows
+    $('d-overdue').textContent=d.overdue_count
+    $('d-avail-sub').textContent=`${d.available_copies} available`
+    $('d-returned-sub').textContent=`${d.returned_count} returned`
+    const pct=d.total_copies>0?Math.round(d.borrowed_copies/d.total_copies*100):0
+    $('d-util-pct').textContent=pct+'%'
+    $('d-util-sub').textContent=`${d.borrowed_copies} of ${d.total_copies} copies borrowed`
+    const fill=$('d-util-fill')
+    fill.style.width=pct+'%'
+    fill.style.background=pct>70?'var(--warning)':'var(--success)'
+    const popEl=$('d-popular')
+    if(!d.popular_books.length){popEl.innerHTML='<div class="empty"><div class="ico">📊</div><p>No data yet</p></div>'}
+    else{
+      const max=d.popular_books[0]?.borrow_count||1
+      popEl.innerHTML=d.popular_books.map((b,i)=>`
+        <div class="popular-row">
+          <div style="width:22px;height:22px;border-radius:50%;background:${i===0?'var(--accent-l)':'var(--warm)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:${i===0?'var(--accent)':'var(--muted)'};flex-shrink:0">${i+1}</div>
+          <div style="flex:1;min-width:0"><div style="font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(b.title)}</div><div style="font-size:11px;color:var(--muted)">${esc(b.author)}</div></div>
+          <div style="font-size:13px;color:var(--muted);font-weight:500;margin-right:8px">${b.borrow_count}×</div>
+          <div style="width:60px;height:5px;background:var(--warm);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.round(b.borrow_count/max*100)}%;background:var(--accent);border-radius:3px"></div></div>
+        </div>`).join('')
+    }
+    if(d.overdue_count>0){
+      $('d-overdue-section').style.display='block'
+      $('d-overdue-title').textContent=`⚠ ${d.overdue_count} overdue borrow${d.overdue_count!==1?'s':''}`
+      $('d-overdue-body').innerHTML=d.overdue_records.map(r=>`<tr>
+        <td style="font-weight:500">${esc(r.book_title)}</td>
+        <td>${esc(r.borrower_name)}</td>
+        <td style="color:var(--muted)">${esc(r.borrower_email)}</td>
+        <td style="color:var(--danger)">${fmt(r.due_date)}</td>
+        <td><span class="badge badge-overdue">${r.overdue_days}d overdue</span></td>
+      </tr>`).join('')
+    }else{$('d-overdue-section').style.display='none'}
+  }catch(e){toast('Failed to load dashboard','error')}
+}
+
+// ── BOOKS ──
+let allBooks=[]
+async function loadBooks(){
+  $('books-body').innerHTML='<tr><td colspan="7"><div class="spinner"></div></td></tr>'
+  try{allBooks=await api('/books/');renderBooks(allBooks)}
+  catch(e){toast('Failed to load books','error')}
+}
+function renderBooks(books){
+  if(!books.length){$('books-body').innerHTML='<tr><td colspan="7"><div class="empty"><div class="ico">📚</div><p>No books found</p></div></td></tr>';return}
+  $('books-body').innerHTML=books.map(b=>`<tr>
+    <td style="font-weight:500">${esc(b.title)}</td>
+    <td style="color:var(--muted)">${esc(b.author)}</td>
+    <td><code style="font-family:var(--mono);font-size:11px;color:var(--muted)">${esc(b.isbn)}</code></td>
+    <td style="text-align:center">${b.total_copies}</td>
+    <td style="text-align:center">${b.available_copies}</td>
+    <td><span class="badge ${b.is_available?'badge-available':'badge-overdue'}">${b.is_available?'Available':'Unavailable'}</span></td>
+    <td><div class="td-actions">
+      <button class="btn btn-sm btn-ghost" onclick='editBook(${b.id})'>Edit</button>
+      <button class="btn btn-sm btn-danger" onclick='deleteBook(${b.id},${JSON.stringify(b.title)})'>Delete</button>
+    </div></td>
+  </tr>`).join('')
+}
+function filterBooks(){const q=$('books-search').value.toLowerCase();renderBooks(allBooks.filter(b=>b.title.toLowerCase().includes(q)||b.author.toLowerCase().includes(q)||b.isbn.toLowerCase().includes(q)))}
+
+let editingBookId=null
+function openBookModal(book=null){
+  editingBookId=book?book.id:null
+  $('book-modal-title').textContent=book?'Edit Book':'Add New Book'
+  $('bm-submit').textContent=book?'Save Changes':'Add Book'
+  $('bm-title').value=book?.title||''
+  $('bm-author').value=book?.author||''
+  $('bm-isbn').value=book?.isbn||''
+  $('bm-copies').value=book?.total_copies||1
+  $('bm-error').style.display='none'
+  $('book-modal').style.display='flex'
+}
+function closeBookModal(){$('book-modal').style.display='none'}
+function editBook(id){const b=allBooks.find(b=>b.id===id);if(b)openBookModal(b)}
+async function submitBook(){
+  const title=$('bm-title').value.trim(),author=$('bm-author').value.trim(),isbn=$('bm-isbn').value.trim(),copies=parseInt($('bm-copies').value)
+  if(!title||!author||!isbn||!copies){showBmError('All fields are required.');return}
+  $('bm-submit').disabled=true;$('bm-submit').textContent='Saving…'
+  try{
+    if(editingBookId){await api(`/books/${editingBookId}/`,{method:'PATCH',body:JSON.stringify({title,author,isbn,total_copies:copies})});toast('Book updated successfully')}
+    else{await api('/books/',{method:'POST',body:JSON.stringify({title,author,isbn,total_copies:copies})});toast('Book added successfully')}
+    closeBookModal();loadBooks();loadDashboard()
+  }catch(e){showBmError(e.message)}
+  finally{$('bm-submit').disabled=false;$('bm-submit').textContent=editingBookId?'Save Changes':'Add Book'}
+}
+function showBmError(msg){$('bm-error').textContent=msg;$('bm-error').style.display='block'}
+async function deleteBook(id,title){
+  if(!confirm(`Delete "${title}"? This cannot be undone.`))return
+  try{await api(`/books/${id}/`,{method:'DELETE'});toast('Book deleted');loadBooks();loadDashboard()}
+  catch(e){toast(e.message,'error')}
+}
+
+// ── BORROWS ──
+let allBorrows=[]
+async function loadBorrows(){
+  $('borrows-body').innerHTML='<tr><td colspan="7"><div class="spinner"></div></td></tr>'
+  try{
+    const[borrowed,overdue]=await Promise.all([api('/borrow-records/?status=borrowed'),api('/borrow-records/?status=overdue')])
+    allBorrows=[...borrowed,...overdue]
+    renderBorrows(allBorrows)
+  }catch(e){toast('Failed to load borrows','error')}
+}
+function renderBorrows(records){
+  if(!records.length){$('borrows-body').innerHTML='<tr><td colspan="7"><div class="empty"><div class="ico">📋</div><p>No active borrows</p></div></td></tr>';return}
+  $('borrows-body').innerHTML=records.map(r=>`<tr>
+    <td style="font-weight:500">${esc(r.book_title)}</td>
+    <td>${esc(r.borrower_name)}</td>
+    <td style="color:var(--muted);font-size:12px">${esc(r.borrower_email)}</td>
+    <td style="color:var(--muted)">${fmt(r.borrow_date)}</td>
+    <td style="color:${r.status==='overdue'?'var(--danger)':'inherit'};font-weight:${r.status==='overdue'?500:400}">${fmt(r.due_date)}${r.overdue_days>0?` <span class="badge badge-overdue" style="margin-left:4px">${r.overdue_days}d</span>`:''}</td>
+    <td><span class="badge badge-${r.status}">${r.status}</span></td>
+    <td><button class="btn btn-sm btn-success" onclick='returnBook(${r.id},${JSON.stringify(r.book_title)})'>↩ Return</button></td>
+  </tr>`).join('')
+}
+function filterBorrows(){const q=$('borrows-search').value.toLowerCase();renderBorrows(allBorrows.filter(r=>r.borrower_name.toLowerCase().includes(q)||r.borrower_email.toLowerCase().includes(q)||r.book_title.toLowerCase().includes(q)))}
+async function returnBook(id,title){
+  if(!confirm(`Mark "${title}" as returned?`))return
+  try{await api(`/borrow-records/${id}/return_book/`,{method:'POST'});toast(`"${title}" returned`);loadBorrows();loadDashboard()}
+  catch(e){toast(e.message,'error')}
+}
+
+function openBorrowModal(){
+  const sel=$('brm-book')
+  sel.innerHTML='<option value="">Select a book…</option>'
+  allBooks.filter(b=>b.is_available).forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=`${b.title} (${b.available_copies} avail.)`;sel.appendChild(o)})
+  const due=new Date();due.setDate(due.getDate()+14)
+  $('brm-due').value=due.toISOString().split('T')[0]
+  $('brm-due').min=new Date().toISOString().split('T')[0]
+  $('brm-name').value='';$('brm-email').value=''
+  $('brm-error').style.display='none'
+  $('borrow-modal').style.display='flex'
+}
+function closeBorrowModal(){$('borrow-modal').style.display='none'}
+async function submitBorrow(){
+  const book=$('brm-book').value,name=$('brm-name').value.trim(),email=$('brm-email').value.trim(),due=$('brm-due').value
+  if(!book||!name||!email||!due){showBrmError('All fields are required.');return}
+  $('brm-submit').disabled=true;$('brm-submit').textContent='Processing…'
+  try{
+    await api('/borrow-records/',{method:'POST',body:JSON.stringify({book:parseInt(book),borrower_name:name,borrower_email:email,due_date:due})})
+    toast('Book borrowed successfully');closeBorrowModal();loadBorrows();loadBooks();loadDashboard()
+  }catch(e){showBrmError(e.message)}
+  finally{$('brm-submit').disabled=false;$('brm-submit').textContent='Confirm Borrow'}
+}
+function showBrmError(msg){$('brm-error').textContent=msg;$('brm-error').style.display='block'}
+
+// ── MEMBERS ──
+let allMembers=[]
+async function loadMembers(){
+  $('members-body').innerHTML='<tr><td colspan="5"><div class="spinner"></div></td></tr>'
+  try{allMembers=await api('/borrow-records/members/');renderMembers(allMembers)}
+  catch(e){toast('Failed to load members','error')}
+}
+const aC=['#f5ede8','#e8f2fb','#e6f4ec','#fdf3e3'],aT=['#c4522a','#1a5e9a','#2d7a4f','#b56a0e']
+function initials(n){return n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}
+function renderMembers(members){
+  if(!members.length){$('members-body').innerHTML='<tr><td colspan="5"><div class="empty"><div class="ico">👥</div><p>No members yet</p></div></td></tr>';return}
+  $('members-body').innerHTML=members.map((m,i)=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:10px">
+      <div class="member-avatar" style="background:${aC[i%4]};color:${aT[i%4]}">${esc(initials(m.borrower_name))}</div>
+      <span style="font-weight:500">${esc(m.borrower_name)}</span>
+    </div></td>
+    <td style="color:var(--muted);font-size:12px">${esc(m.borrower_email)}</td>
+    <td><span class="badge badge-info">${m.total}</span></td>
+    <td>${m.active>0?`<span class="badge badge-borrowed">${m.active}</span>`:'<span style="color:var(--faint)">0</span>'}</td>
+    <td>${m.overdue>0?`<span class="badge badge-overdue">⚠ ${m.overdue}</span>`:'<span style="color:var(--faint)">0</span>'}</td>
+  </tr>`).join('')
+}
+function filterMembers(){const q=$('members-search').value.toLowerCase();renderMembers(allMembers.filter(m=>m.borrower_name.toLowerCase().includes(q)||m.borrower_email.toLowerCase().includes(q)))}
+
+// ── HISTORY ──
+let allHistory=[]
+async function loadHistory(){
+  $('history-body').innerHTML='<tr><td colspan="8"><div class="spinner"></div></td></tr>'
+  try{allHistory=await api('/borrow-records/history/');renderHistory(allHistory)}
+  catch(e){toast('Failed to load history','error')}
+}
+function renderHistory(records){
+  if(!records.length){$('history-body').innerHTML='<tr><td colspan="8"><div class="empty"><div class="ico">🕰</div><p>No history yet</p></div></td></tr>';return}
+  $('history-body').innerHTML=records.map(r=>`<tr>
+    <td style="font-weight:500">${esc(r.book_title)}</td>
+    <td style="color:var(--muted)">${esc(r.book_author)}</td>
+    <td>${esc(r.borrower_name)}</td>
+    <td style="color:var(--muted)">${fmt(r.borrow_date)}</td>
+    <td style="color:${r.status==='overdue'?'var(--danger)':'var(--muted)'}">${fmt(r.due_date)}</td>
+    <td style="color:var(--muted)">${fmt(r.return_date)}</td>
+    <td style="color:${r.overdue_days>0?'var(--danger)':'var(--faint)'};font-weight:${r.overdue_days>0?500:400}">${r.overdue_days>0?`${r.overdue_days}d`:'—'}</td>
+    <td><span class="badge badge-${r.status}">${r.status}</span></td>
+  </tr>`).join('')
+}
+function filterHistory(){
+  const q=$('history-search').value.toLowerCase(),s=$('history-status').value
+  renderHistory(allHistory.filter(r=>{
+    const mq=r.book_title.toLowerCase().includes(q)||r.borrower_name.toLowerCase().includes(q)||r.borrower_email.toLowerCase().includes(q)
+    return mq&&(!s||r.status===s)
+  }))
+}
+
+// Init
+loadDashboard()
+loadBooks()
+</script>
+</body>
+</html>
