@@ -1,7 +1,7 @@
 // api.js
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://ipt-group-pit.onrender.com/api'
 
 // Helper to get the CSRF cookie Django sets automatically
 function getCsrfToken() {
