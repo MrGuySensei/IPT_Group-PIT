@@ -111,12 +111,16 @@ else:
 
 CORS_ALLOW_CREDENTIALS = True
 
-# Required for cross-site cookies (frontend on Vercel, backend on Render)
+# Session/csrf cookie settings
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = not DEBUG   # True in production (HTTPS)
-CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = not DEBUG
+if DEBUG:
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+else:
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
 
 # ─── Email ───────────────────────────────────────────────────────────────────
 REQUIRE_EMAIL_VERIFICATION = os.environ.get('REQUIRE_EMAIL_VERIFICATION', 'True').lower() in ('1', 'true', 'yes', 'on')
