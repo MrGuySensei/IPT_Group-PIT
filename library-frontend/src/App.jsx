@@ -10,13 +10,13 @@ import './index.css'
    role = 'staff' | 'member'
 ══════════════════════════════════════════════════════ */
 const AuthContext = createContext(null)
-
+const API_BASE = import.meta.env.VITE_API_URL || 'https://ipt-group-pit.onrender.com/api'
 function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/auth/me/', { credentials: 'include' })
+    fetch('https://ipt-group-pit.onrender.com/api/auth/me/', { credentials: 'include' })
       .then(r => r.json())
       .then(d => { if (d.user) setUser(d.user) })
       .catch(() => {})
@@ -24,7 +24,7 @@ function AuthProvider({ children }) {
   }, [])
 
 const loginStaff = async (username, password) => {
-  const res = await fetch('/api/auth/staff/login/', {   // ← trailing slash restored
+  const res = await fetch('https://ipt-group-pit.onrender.com/api/auth/staff/login/', {   // ← trailing slash restored
     method: 'POST', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
@@ -46,30 +46,31 @@ const loginStaff = async (username, password) => {
   setUser(data.user)
 }
 
-  const signupStaff = async (fields) => {
-    const formData = new FormData()
-    formData.append('username', fields.username)
-    formData.append('email', fields.email)
-    formData.append('password', fields.password)
-    formData.append('confirm_password', fields.confirm_password)
-    formData.append('date_of_birth', fields.date_of_birth)
-    if (fields.first_name) formData.append('first_name', fields.first_name)
-    if (fields.last_name) formData.append('last_name', fields.last_name)
-    if (fields.profile_picture) {
-      formData.append('profile_picture', fields.profile_picture)
-    }
+ const signupStaff = async (fields) => {
+  const formData = new FormData()
+  formData.append('username', fields.username)
+  formData.append('email', fields.email)
+  formData.append('password', fields.password)
+  formData.append('confirm_password', fields.confirm_password)
+  formData.append('date_of_birth', fields.date_of_birth)
+  if (fields.first_name) formData.append('first_name', fields.first_name)
+  if (fields.last_name) formData.append('last_name', fields.last_name)
+  if (fields.profile_picture) formData.append('profile_picture', fields.profile_picture)
 
-    const res = await fetch('/api/auth/staff/signup/', {
-      method: 'POST', credentials: 'include',
-      body: formData,  // No Content-Type header for FormData
-    })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Sign up failed')
-    return data
-  }
+  const res = await fetch('https://ipt-group-pit.onrender.com/api/auth/staff/signup/', {
+    method: 'POST', credentials: 'include',
+    body: formData,
+  })
+
+  // ← safely parse — body may be empty
+let data = {}
+try { data = await res.json() } catch { /* empty body */ }
+if (!res.ok) throw new Error(data.error || 'Sign up failed')
+return data
+}
 
 const loginMember = async (username, password) => {
-  const res = await fetch('/api/auth/member/login/', {  // ← trailing slash restored
+  const res = await fetch('https://ipt-group-pit.onrender.com/api/auth/member/login/', {  // ← trailing slash restored
     method: 'POST', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
@@ -92,7 +93,7 @@ const loginMember = async (username, password) => {
 }
 
   const resendVerification = async (email) => {
-    const res = await fetch('/api/auth/resend-verification/', {
+    const res = await fetch('https://ipt-group-pit.onrender.com/api/auth/resend-verification/', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -103,31 +104,35 @@ const loginMember = async (username, password) => {
   }
 
   const signupMember = async (fields) => {
-    const formData = new FormData()
-    formData.append('username', fields.username)
-    formData.append('email', fields.email)
-    formData.append('password', fields.password)
-    formData.append('confirm_password', fields.confirm_password)
-    formData.append('date_of_birth', fields.date_of_birth)
-    if (fields.first_name) formData.append('first_name', fields.first_name)
-    if (fields.last_name) formData.append('last_name', fields.last_name)
-    if (fields.profile_picture) {
-      formData.append('profile_picture', fields.profile_picture)
-    }
+  const formData = new FormData()
+  formData.append('username', fields.username)
+  formData.append('email', fields.email)
+  formData.append('password', fields.password)
+  formData.append('confirm_password', fields.confirm_password)
+  formData.append('date_of_birth', fields.date_of_birth)
+  if (fields.first_name) formData.append('first_name', fields.first_name)
+  if (fields.last_name) formData.append('last_name', fields.last_name)
+  if (fields.profile_picture) formData.append('profile_picture', fields.profile_picture)
 
-    const res = await fetch('/api/auth/member/signup/', {
-      method: 'POST', credentials: 'include',
-      body: formData,  // No Content-Type header for FormData
-    })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Sign up failed')
-    return data
-  }
+  const res = await fetch('https://ipt-group-pit.onrender.com/api/auth/member/signup/', {
+    method: 'POST', credentials: 'include',
+    body: formData,
+  })
+
+  // ← safely parse — body may be empty
+  let data = {}
+  try { data = await res.json() } catch { /* empty body is fine */ }
+
+  if (!res.ok) throw new Error(data.error || data.detail || 'Sign up failed')
+  return data
+}
 
   const logout = async () => {
-    await fetch('/api/auth/logout/', { method: 'POST', credentials: 'include' })
-    setUser(null)
-  }
+  await fetch('https://ipt-group-pit.onrender.com/api/auth/logout/', { 
+    method: 'POST', credentials: 'include' 
+  })
+  setUser(null)
+}
 
   return (
     <AuthContext.Provider value={{ user, loading, loginStaff, signupStaff, loginMember, signupMember, resendVerification, logout }}>
@@ -581,7 +586,7 @@ function EmailVerificationPage({ token, onVerified }) {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
-        const res = await fetch(`/api/auth/verify/${token}/`)
+        const res = await fetch(`https://ipt-group-pit.onrender.com/api/auth/verify/${token}/`)
         const data = await res.json()
         if (res.ok && data.verified) {
           setStatus('success')

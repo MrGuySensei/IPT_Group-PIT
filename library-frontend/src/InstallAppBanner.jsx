@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 export default function InstallAppBanner() {
-  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const deferredPrompt = useRef(null)
+  const [canInstall, setCanInstall] = useState(false)
   const [dismissed, setDismissed] = useState(
     () => localStorage.getItem('pwa-install-dismissed') === '1'
   )
@@ -15,7 +16,8 @@ export default function InstallAppBanner() {
 
     const onBeforeInstall = (e) => {
       e.preventDefault()
-      setDeferredPrompt(e)
+      deferredPrompt.current = e   // store in ref, not state
+      setCanInstall(true)          // trigger re-render with a plain boolean
     }
 
     window.addEventListener('beforeinstallprompt', onBeforeInstall)
@@ -23,10 +25,11 @@ export default function InstallAppBanner() {
   }, [])
 
   const install = async () => {
-    if (!deferredPrompt) return
-    deferredPrompt.prompt()
-    await deferredPrompt.userChoice
-    setDeferredPrompt(null)
+    if (!deferredPrompt.current) return
+    deferredPrompt.current.prompt()
+    await deferredPrompt.current.userChoice
+    deferredPrompt.current = null
+    setCanInstall(false)
   }
 
   const dismiss = () => {
@@ -34,7 +37,7 @@ export default function InstallAppBanner() {
     setDismissed(true)
   }
 
-  if (isStandalone || dismissed || !deferredPrompt) return null
+  if (isStandalone || dismissed || !canInstall) return null
 
   return (
     <div style={{
