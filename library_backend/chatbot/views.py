@@ -5,10 +5,7 @@ import json
 import os
 from dotenv import load_dotenv
 
-# Initialize Groq client
 load_dotenv(override=True)
-
-client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
 
 @csrf_exempt
 def chatbot_response(request):
@@ -20,12 +17,14 @@ def chatbot_response(request):
             if not user_message:
                 return JsonResponse({'error': 'No message provided'}, status=400)
 
-            # Library Assistant Prompt
+            # Initialize client here instead of module level
+            client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
+
             system_prompt = """You are a friendly and helpful librarian assistant for an online library system. 
             Help users with book recommendations, searching books, borrowing rules, due dates, and general library information."""
 
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",   # Good balance of speed and quality
+                model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message}
